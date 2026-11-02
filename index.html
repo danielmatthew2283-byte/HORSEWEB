@@ -689,6 +689,12 @@ footer {
 .copy-btn:active {
     transform: scale(0.95);
 }
+    
+.copy-btn.copied {
+    background: #228b22;
+    color: white;
+}
+    
 
 /* Mobile Responsive */
 @media (max-width: 600px) {
@@ -1047,18 +1053,47 @@ footer {
 
 <script>
     
-function copyCA() {
-    const address = document.getElementById("contractAddress").innerText;
 
-    navigator.clipboard.writeText(address).then(() => {
-        const button = document.querySelector(".copy-btn");
-        button.innerText = "COPIED!";
+async function copyCA() {
+    const address = document.getElementById("contractAddress").textContent.trim();
+    const button = document.querySelector(".copy-btn");
+
+    try {
+        await navigator.clipboard.writeText(address);
+
+        button.textContent = "COPIED ✓";
+        button.classList.add("copied");
 
         setTimeout(() => {
-            button.innerText = "COPY CA";
+            button.textContent = "COPY CA";
+            button.classList.remove("copied");
         }, 2000);
-    });
+
+    } catch (err) {
+        // Fallback for browsers with clipboard restrictions
+        const textarea = document.createElement("textarea");
+        textarea.value = address;
+        textarea.style.position = "fixed";
+        textarea.style.opacity = "0";
+
+        document.body.appendChild(textarea);
+        textarea.select();
+
+        const success = document.execCommand("copy");
+        document.body.removeChild(textarea);
+
+        if (success) {
+            button.textContent = "COPIED ✓";
+        } else {
+            button.textContent = "COPY FAILED";
+        }
+
+        setTimeout(() => {
+            button.textContent = "COPY CA";
+        }, 2000);
+    }
 }
+    
     
     // Automatically update the copyright year
     document.getElementById("year").textContent =
